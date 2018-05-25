@@ -28,7 +28,7 @@ from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'Road slope plugin_dockwidget_base.ui'))
+    os.path.dirname(__file__), 'Road_slope_plugin_dockwidget_base.ui'))
 
 
 class RoadSlopePluginDockWidget(QtWidgets.QDockWidget, FORM_CLASS):

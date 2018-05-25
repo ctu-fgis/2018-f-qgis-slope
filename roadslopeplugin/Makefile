@@ -38,15 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	Road slope plugin.py Road slope plugin_dockwidget.py
+	Road_slope_plugin.py Road_slope_plugin_dockwidget.py
 
-PLUGINNAME = Road slope plugin
+PLUGINNAME = Road_slope_plugin
 
 PY_FILES = \
 	__init__.py \
-	Road slope plugin.py Road slope plugin_dockwidget.py
+	Road_slope_plugin.py Road_slope_plugin_dockwidget.py
 
-UI_FILES = Road slope plugin_dockwidget_base.ui
+UI_FILES = Road_slope_plugin_dockwidget_base.ui
 
 EXTRAS = metadata.txt icon.png
 

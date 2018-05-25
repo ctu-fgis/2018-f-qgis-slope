@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import QAction
 from .resources import *
 
 # Import the code for the DockWidget
-from .Road slope plugin_dockwidget import RoadSlopePluginDockWidget
+from .Road_slope_plugin_dockwidget import RoadSlopePluginDockWidget
 import os.path
 
 
@@ -169,7 +169,7 @@ class RoadSlopePlugin:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/Road slope plugin/icon.png'
+        icon_path = ':/plugins/Road_slope_plugin/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Road slope plugin'),

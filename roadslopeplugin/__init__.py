@@ -32,5 +32,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .Road slope plugin import RoadSlopePlugin
+    from .Road_slope_plugin import RoadSlopePlugin
     return RoadSlopePlugin(iface)

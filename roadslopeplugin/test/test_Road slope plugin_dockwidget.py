@@ -16,7 +16,7 @@ import unittest
 
 from PyQt5.QtGui import QDockWidget
 
-from Road slope plugin_dockwidget import RoadSlopePluginDockWidget
+from Road_slope_plugin_dockwidget import RoadSlopePluginDockWidget
 
 from utilities import get_qgis_app
 
