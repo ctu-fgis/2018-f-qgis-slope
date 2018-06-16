@@ -214,6 +214,7 @@ class RoadSlopePlugin:
         """Run method that loads and starts the plugin"""
 
         if not self.pluginIsActive:
+
             self.pluginIsActive = True
 
             #print "** STARTING RoadSlopePlugin"
