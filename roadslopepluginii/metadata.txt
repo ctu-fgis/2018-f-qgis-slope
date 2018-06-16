@@ -7,17 +7,17 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Road slope plugin
+name=RoadSlopePluginII
 qgisMinimumVersion=3.0
-description=This plugin compute slope in percent for each line in the vector layer from DEM 
+description=This plugin compute slope in percent for each line in the vector layer from DEM and split feature with more than two vertex into separate features by changing slope.
 version=0.1
-author=Patakova
+author=Michaela Patakova
 email=patakovamichala@gmail.com
 
-about=This plugin compute slope in percent for each line in the vector layer from DEM and split feature with more than two vertex into separate features by changing slope.
+about=This plugin compute slope in percent for each line in the vector layer from DEM and split feature with more than two vertex into separate features by changing slope. This plugin requires QGIS version 3.0 or higher.
 
-tracker=http://bugs
-repository=https://github.com/ctu-yfsg/2018-f-qgis-slope
+tracker=patakovamichala@gmail.com
+repository=https://github.com/ctu-yfsg/2018-f-qgis-slope/tree/master/roadslopeplugin
 # End of mandatory metadata
 
 # Recommended items:
@@ -26,13 +26,13 @@ repository=https://github.com/ctu-yfsg/2018-f-qgis-slope
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python, slope
+tags=python, lines, slope
 
-homepage=http://homepage
+homepage=https://github.com/ctu-yfsg/2018-f-qgis-slope
 category=Plugins
 icon=icon.png
 # experimental flag
-experimental=False
+experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False

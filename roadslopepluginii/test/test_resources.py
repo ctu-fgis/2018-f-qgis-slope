@@ -9,8 +9,8 @@
 """
 
 __author__ = 'patakovamichala@gmail.com'
-__date__ = '2018-05-21'
-__copyright__ = 'Copyright 2018, Patakova'
+__date__ = '2018-06-16'
+__copyright__ = 'Copyright 2018, Michaela Patakova'
 
 import unittest
 
@@ -18,7 +18,7 @@ from PyQt5.QtGui import QIcon
 
 
 
-class RoadSlopePluginDialogTest(unittest.TestCase):
+class RoadSlopePluginIIDialogTest(unittest.TestCase):
     """Test rerources work."""
 
     def setUp(self):
@@ -31,12 +31,12 @@ class RoadSlopePluginDialogTest(unittest.TestCase):
 
     def test_icon_png(self):
         """Test we can click OK."""
-        path = ':/plugins/RoadSlopePlugin/icon.png'
+        path = ':/plugins/RoadSlopePluginII/icon.png'
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(RoadSlopePluginResourcesTest)
+    suite = unittest.makeSuite(RoadSlopePluginIIResourcesTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
 

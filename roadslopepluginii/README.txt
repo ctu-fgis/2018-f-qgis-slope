@@ -1,7 +1,7 @@
 Plugin Builder Results
 
-Your plugin RoadSlopePlugin was created in:
-    C:/Users/patmic/Desktop/CVZ_CVUT/Free_software_gis/2018-f-qgis-slope\roadslopeplugin
+Your plugin RoadSlopePluginII was created in:
+    C:/Users/patmic/Desktop/CVZ_CVUT/Free_software_gis/2018-f-qgis-slope\roadslopepluginii
 
 Your QGIS plugin directory is located at:
     C:/Users/patmic/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
@@ -17,11 +17,11 @@ What's Next:
 
   * Test the plugin by enabling it in the QGIS plugin manager
 
-  * Customize it by editing the implementation file: ``Road_slope_plugin.py``
+  * Customize it by editing the implementation file: ``RoadSlopePluginII.py``
 
   * Create your own custom icon, replacing the default icon.png
 
-  * Modify your user interface by opening RoadSlopePlugin.ui in Qt Designer
+  * Modify your user interface by opening RoadSlopePluginII.ui in Qt Designer
 
   * You can use the Makefile to compile your Ui and resource files when
     you make changes. This requires GNU make (gmake)

@@ -1,11 +1,11 @@
 #/***************************************************************************
-# RoadSlopePlugin
+# RoadSlopePluginII
 #
-# This plugin compute slope in percent for each line in the vector layer from DEM 
+# This plugin compute slope in percent for each line in the vector layer from DEM and split feature with more than two vertex into separate features by changing slope.
 #							 -------------------
-#		begin				: 2018-05-21
+#		begin				: 2018-06-16
 #		git sha				: $Format:%H$
-#		copyright			: (C) 2018 by Patakova
+#		copyright			: (C) 2018 by Michaela Patakova
 #		email				: patakovamichala@gmail.com
 # ***************************************************************************/
 #
@@ -38,15 +38,15 @@ LOCALES =
 # translation
 SOURCES = \
 	__init__.py \
-	Road_slope_plugin.py Road_slope_plugin_dockwidget.py
+	RoadSlopePluginII.py RoadSlopePluginII_dialog.py
 
-PLUGINNAME = Road_slope_plugin
+PLUGINNAME = RoadSlopePluginII
 
 PY_FILES = \
 	__init__.py \
-	Road_slope_plugin.py Road_slope_plugin_dockwidget.py
+	RoadSlopePluginII.py RoadSlopePluginII_dialog.py
 
-UI_FILES = Road_slope_plugin_dockwidget_base.ui
+UI_FILES = RoadSlopePluginII_dialog_base.ui
 
 EXTRAS = metadata.txt icon.png
 

@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/Road_slope_plugin" >
+    <qresource prefix="/plugins/RoadSlopePluginII" >
         <file>icon.png</file>
     </qresource>
 </RCC>
