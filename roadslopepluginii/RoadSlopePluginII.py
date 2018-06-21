@@ -26,6 +26,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
 from qgis.core import QgsProject
 from qgis.core import QgsMapLayer
+from PyQt5.QtGui import QAction, QIcon, QFileDialog
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -71,6 +72,11 @@ class RoadSlopePluginII:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'RoadSlopePluginII')
         self.toolbar.setObjectName(u'RoadSlopePluginII')
+
+        # clear the previously loaded text (if any) in the line edit widget
+        self.dlg.lineEdit.clear()
+        # connect the select_output_file method to the clicked signal of the tool button widget
+        self.dlg.toolButton.clicked.connect(self.select_output_dir)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -182,6 +188,9 @@ class RoadSlopePluginII:
         # remove the toolbar
         del self.toolbar
 
+    def select_output_dir(self):
+        self.dirname = QFileDialog.getExistingDirectory(self.dlg, "Select directory ", "/home")
+        self.dlg.lineEdit.setText(self.dirname)
 
     def run(self):
         """Run method that performs all the real work"""
