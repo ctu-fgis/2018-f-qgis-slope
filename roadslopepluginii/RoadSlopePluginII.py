@@ -26,6 +26,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
 from qgis.core import QgsProject
 from qgis.core import QgsMapLayer
+from qgis.core import QgsMessageLog
 from PyQt5.QtGui import QAction, QIcon, QFileDialog
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -77,6 +78,9 @@ class RoadSlopePluginII:
         self.dlg.lineEdit.clear()
         # connect the select_output_file method to the clicked signal of the tool button widget
         self.dlg.toolButton.clicked.connect(self.select_output_dir)
+
+        # clear the previously loaded value (if any) in the spin box widget
+        self.dlg.spinBox.clear()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -207,20 +211,23 @@ class RoadSlopePluginII:
         if result:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
+            lenghtOfSegment = int(self.dlg.spinBox.value())
+            rastCurrentIndex = self.dlg.comboBox.currentIndex()
+            vectCurrentIndex = self.dlg.comboBox_2.currentIndex()
+            raster = self.dlg.comboBox.itemData(rastCurrentIndex)
+            vector = self.dlg.comboBox_2.itemData(vectCurrentIndex)
+            #QgsMessageLog.logMessage(str(lenghtOfSegment))
+            #QgsMessageLog.logMessage(str(raster))
+            #QgsMessageLog.logMessage(str(vector))
             pass
 
     def populateComboBoxes(self):
         layers = [layer for layer in QgsProject.instance().mapLayers().values()]
-        vectorLayerList = []
-        rasterLayerList = []
+
         for layer in layers:
             layerType = layer.type()
             if layerType == QgsMapLayer.VectorLayer:
-                vectorLayerList.append(layer.name())
+                self.dlg.comboBox_2.addItem(layer.name(), layer)
             elif layerType == QgsMapLayer.RasterLayer:
-                 rasterLayerList.append(layer.name())
-        self.dlg.comboBox.addItems(rasterLayerList)
-        self.dlg.comboBox_2.addItems(vectorLayerList)
-
-
+                 self.dlg.comboBox.addItem(layer.name(), layer)
 

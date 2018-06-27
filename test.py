@@ -7,7 +7,6 @@ from fiona.crs import from_epsg
 def interpolatePoints(line, lenghtOfSegment):
 
     # preparations
-
     # distance counter
     tmpDistance = 0
 
