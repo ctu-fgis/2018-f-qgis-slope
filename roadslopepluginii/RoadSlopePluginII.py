@@ -21,18 +21,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from qgis.core import *
+from PyQt5.QtCore import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction
-from qgis.core import QgsProject
-from qgis.core import QgsMapLayer
-from qgis.core import QgsMessageLog
+from qgis.utils import *
 from PyQt5.QtGui import QAction, QIcon, QFileDialog
-# Initialize Qt resources from file resources.py
-from .resources import *
-# Import the code for the dialog
 from .RoadSlopePluginII_dialog import RoadSlopePluginIIDialog
 import os.path
+import math
+import os
 
 
 class RoadSlopePluginII:
@@ -97,18 +95,17 @@ class RoadSlopePluginII:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('RoadSlopePluginII', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -181,7 +178,6 @@ class RoadSlopePluginII:
             callback=self.run,
             parent=self.iface.mainWindow())
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -216,9 +212,13 @@ class RoadSlopePluginII:
             vectCurrentIndex = self.dlg.comboBox_2.currentIndex()
             raster = self.dlg.comboBox.itemData(rastCurrentIndex)
             vector = self.dlg.comboBox_2.itemData(vectCurrentIndex)
-            #QgsMessageLog.logMessage(str(lenghtOfSegment))
-            #QgsMessageLog.logMessage(str(raster))
+
             #QgsMessageLog.logMessage(str(vector))
+
+            self.processLayer(vector, raster, lenghtOfSegment)
+            # QgsMessageLog.logMessage(str(lenghtOfSegment))
+            # QgsMessageLog.logMessage(str(raster))
+
             pass
 
     def populateComboBoxes(self):
@@ -229,5 +229,76 @@ class RoadSlopePluginII:
             if layerType == QgsMapLayer.VectorLayer:
                 self.dlg.comboBox_2.addItem(layer.name(), layer)
             elif layerType == QgsMapLayer.RasterLayer:
-                 self.dlg.comboBox.addItem(layer.name(), layer)
+                self.dlg.comboBox.addItem(layer.name(), layer)
+
+    def processLayer(self, features, raster, lenghtOfSegment=20):
+        # 1. interpolate points along the feature layer
+
+        #fields = features.fields()
+        fields = features.fields()
+        fields.append(QgsField('distance', QVariant.Double))
+        fields.append(QgsField('angle', QVariant.Double))
+        crs = 5514
+        spatRef = QgsCoordinateReferenceSystem(crs, QgsCoordinateReferenceSystem.EpsgCrsId)
+        filename = r"C:\Users\patmic\Desktop\CVZ_CVUT\Free_software_gis\output\my_shapes2.shp"
+        if os.path.exists(filename):
+            os.remove(filename)
+        else:
+            QgsMessageLog.logMessage("Sorry, I can not remove file.")
+        writer = QgsVectorFileWriter(
+            filename,
+            "utf-8",
+            fields,
+            QgsWkbTypes.Point,
+            spatRef,
+            "ESRI Shapefile"
+        )
+
+        if writer.hasError() != QgsVectorFileWriter.NoError:
+            QgsMessageLog.logMessage("Error when creating shapefile: " + writer.errorMessage())
+
+        self.interpolate(features, lenghtOfSegment, writer)
+
+        del writer
+        QgsMessageLog.logMessage("writer flushed")
+
+        # 2. intersect output points with raster layer, output is list of elevation values
+        # 3. find local extremes and calculate slopes between neighbour extremes
+        # 4. create new features where starting point is either local maximum or minimum and endpoint is the other one
+        #    than a starting point, where each feature has calculated slope information
+
+    def interpolate(self, layer, length_of_segment, writer):
+        distance = length_of_segment
+        start_offset = 0
+        end_offset = 0
+
+        features = layer.getFeatures()
+        #features = vector.features(layer)
+        for current, input_feature in enumerate(features):
+            input_geometry = input_feature.geometry()
+            if not input_geometry:
+                writer.addFeature(input_feature)
+                #QgsMessageLog.logMessage("adding feature to writer")
+            else:
+                if input_geometry.type == QgsWkbTypes.PolygonGeometry:
+                    length = input_geometry.geometry().perimeter()
+                else:
+                    length = input_geometry.length() - end_offset
+                current_distance = start_offset
+
+                while current_distance <= length:
+                    point = input_geometry.interpolate(current_distance)
+                    angle = math.degrees(input_geometry.interpolateAngle(current_distance))
+
+                    output_feature = QgsFeature()
+                    output_feature.setGeometry(point)
+                    attrs = input_feature.attributes()
+                    attrs.append(current_distance)
+                    attrs.append(angle)
+                    output_feature.setAttributes(attrs)
+                    writer.addFeature(output_feature)
+                   #QgsMessageLog.logMessage("adding feature to writer")
+
+                    current_distance += distance
+
 
