@@ -234,17 +234,19 @@ class RoadSlopePluginII:
     def processLayer(self, features, raster, lenghtOfSegment=20):
         # 1. interpolate points along the feature layer
 
-        #fields = features.fields()
         fields = features.fields()
         fields.append(QgsField('distance', QVariant.Double))
         fields.append(QgsField('angle', QVariant.Double))
+        fields.append(QgsField('elevation', QVariant.Double))
         crs = 5514
         spatRef = QgsCoordinateReferenceSystem(crs, QgsCoordinateReferenceSystem.EpsgCrsId)
         filename = r"C:\Users\patmic\Desktop\CVZ_CVUT\Free_software_gis\output\my_shapes2.shp"
+        # overwrite output file
         if os.path.exists(filename):
             os.remove(filename)
         else:
             QgsMessageLog.logMessage("Sorry, I can not remove file.")
+
         writer = QgsVectorFileWriter(
             filename,
             "utf-8",
@@ -257,7 +259,7 @@ class RoadSlopePluginII:
         if writer.hasError() != QgsVectorFileWriter.NoError:
             QgsMessageLog.logMessage("Error when creating shapefile: " + writer.errorMessage())
 
-        self.interpolate(features, lenghtOfSegment, writer)
+        self.interpolate(features, lenghtOfSegment, writer, raster)
 
         del writer
         QgsMessageLog.logMessage("writer flushed")
@@ -267,13 +269,12 @@ class RoadSlopePluginII:
         # 4. create new features where starting point is either local maximum or minimum and endpoint is the other one
         #    than a starting point, where each feature has calculated slope information
 
-    def interpolate(self, layer, length_of_segment, writer):
+    def interpolate(self, layer, length_of_segment, writer, rasterLayer):
         distance = length_of_segment
         start_offset = 0
         end_offset = 0
 
         features = layer.getFeatures()
-        #features = vector.features(layer)
         for current, input_feature in enumerate(features):
             input_geometry = input_feature.geometry()
             if not input_geometry:
@@ -295,10 +296,16 @@ class RoadSlopePluginII:
                     attrs = input_feature.attributes()
                     attrs.append(current_distance)
                     attrs.append(angle)
+                    attrs.append(getElevation(rasterLayer, point.asPoint()))
                     output_feature.setAttributes(attrs)
                     writer.addFeature(output_feature)
-                   #QgsMessageLog.logMessage("adding feature to writer")
+                    #QgsMessageLog.logMessage("adding feature to writer")
 
                     current_distance += distance
 
 
+
+def getElevation(rasterLayer, point):
+    band = 1
+    results = rasterLayer.dataProvider().identify(point,QgsRaster.IdentifyFormatValue).results()
+    return results[band]
