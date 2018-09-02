@@ -235,9 +235,8 @@ class RoadSlopePluginII:
         # 1. interpolate points along the feature layer
 
         fields = features.fields()
-        fields.append(QgsField('distance', QVariant.Double))
         fields.append(QgsField('angle', QVariant.Double))
-        fields.append(QgsField('elevation', QVariant.Double))
+        fields.append(QgsField('angleType', QVariant.String))
         crs = 5514
         spatRef = QgsCoordinateReferenceSystem(crs, QgsCoordinateReferenceSystem.EpsgCrsId)
         filename = r"C:\Users\patmic\Desktop\CVZ_CVUT\Free_software_gis\output\my_shapes2.shp"
@@ -251,7 +250,7 @@ class RoadSlopePluginII:
             filename,
             "utf-8",
             fields,
-            QgsWkbTypes.Point,
+            QgsWkbTypes.LineString,
             spatRef,
             "ESRI Shapefile"
         )
@@ -259,12 +258,12 @@ class RoadSlopePluginII:
         if writer.hasError() != QgsVectorFileWriter.NoError:
             QgsMessageLog.logMessage("Error when creating shapefile: " + writer.errorMessage())
 
-        self.interpolate(features, lenghtOfSegment, writer, raster)
+        try:
+            self.interpolate(features, lenghtOfSegment, writer, raster)
+        finally:
+            del writer
+            QgsMessageLog.logMessage("writer flushed")
 
-        del writer
-        QgsMessageLog.logMessage("writer flushed")
-
-        # 2. intersect output points with raster layer, output is list of elevation values
         # 3. find local extremes and calculate slopes between neighbour extremes
         # 4. create new features where starting point is either local maximum or minimum and endpoint is the other one
         #    than a starting point, where each feature has calculated slope information
@@ -287,25 +286,106 @@ class RoadSlopePluginII:
                     length = input_geometry.length() - end_offset
                 current_distance = start_offset
 
+                start_elevation = None
+                cur_elevation = None
+                prev_elevation = None
+                prev_prev_elevation = None
+                pointsForLine = []
                 while current_distance <= length:
-                    point = input_geometry.interpolate(current_distance)
-                    angle = math.degrees(input_geometry.interpolateAngle(current_distance))
+                    point = input_geometry.interpolate(current_distance).asPoint()
+                    qgsPoint = QgsPoint(point.x(), point.y())
 
-                    output_feature = QgsFeature()
-                    output_feature.setGeometry(point)
-                    attrs = input_feature.attributes()
-                    attrs.append(current_distance)
-                    attrs.append(angle)
-                    attrs.append(getElevation(rasterLayer, point.asPoint()))
-                    output_feature.setAttributes(attrs)
-                    writer.addFeature(output_feature)
-                    #QgsMessageLog.logMessage("adding feature to writer")
+                    points_len = len(pointsForLine)
+                    if points_len == 0:
+                        cur_elevation = getElevation(rasterLayer, point)
+                        if cur_elevation is not None:
+                            start_elevation = cur_elevation
+                            pointsForLine.append(qgsPoint)
+                    elif points_len == 1:
+                        prev_elevation = cur_elevation
+                        cur_elevation = getElevation(rasterLayer, point)
+                        pointsForLine.append(qgsPoint)
+                    else:
+                        prev_prev_elevation = prev_elevation
+                        prev_elevation = cur_elevation
+                        cur_elevation = getElevation(rasterLayer, point)
+
+                        extreme = localExtreme(prev_prev_elevation, prev_elevation, cur_elevation)
+                        if extreme is not None:
+                            output_feature = QgsFeature()
+                            output_feature.setGeometry(QgsGeometry.fromPolyline(pointsForLine))
+
+                            elevation_diff = math.fabs(prev_elevation - start_elevation)
+                            start_end_distance = qgsPoint.distance(pointsForLine[0])
+                            angle = computeAngle(elevation_diff, start_end_distance)
+
+                            attrs = input_feature.attributes()
+                            attrs.append(angle)
+                            attrs.append(extreme)
+                            output_feature.setAttributes(attrs)
+
+                            writer.addFeature(output_feature)
+
+                            # reset
+                            pointsForLine = []
+                            start_elevation = cur_elevation
+
+                        pointsForLine.append(qgsPoint)
+
+
+                    # output_feature = QgsFeature()
+                    # output_feature.setGeometry(point)
+                    # attrs = input_feature.attributes()
+                    # attrs.append(current_distance)
+                    # attrs.append(angle)
+                    # attrs.append(getElevation(rasterLayer, point.asPoint()))
+                    # output_feature.setAttributes(attrs)
+                    # writer.addFeature(output_feature)
 
                     current_distance += distance
 
+
+                # create line from remaining points
+                if len(pointsForLine) > 1 and start_elevation is not None and cur_elevation is not None:
+                    last_feature = QgsFeature()
+                    last_feature.setGeometry(QgsGeometry.fromPolyline(pointsForLine))
+
+                    elevation_diff = math.fabs(cur_elevation - start_elevation)
+                    start_end_distance = pointsForLine[len(pointsForLine)-1].distance(pointsForLine[0])
+                    angle = computeAngle(elevation_diff, start_end_distance)
+
+                    attrs = input_feature.attributes()
+                    attrs.append(angle)
+                    #attrs.append(extreme)
+                    last_feature.setAttributes(attrs)
+                    writer.addFeature(last_feature)
 
 
 def getElevation(rasterLayer, point):
     band = 1
     results = rasterLayer.dataProvider().identify(point,QgsRaster.IdentifyFormatValue).results()
-    return results[band]
+    elevation = results[band]
+    return elevation
+
+
+def isMaximum(prev_prev_elevation, prev_elevation, cur_elevation):
+    return (prev_prev_elevation < prev_elevation) and (prev_elevation > cur_elevation)
+
+
+def isMinumum(prev_prev_elevation, prev_elevation, cur_elevation):
+    return (prev_prev_elevation > prev_elevation) and (prev_elevation < cur_elevation)
+
+
+def localExtreme(prev_prev_elevation, prev_elevation, cur_elevation):
+    if prev_prev_elevation is None or prev_elevation is None or cur_elevation is None:
+        return None
+    if isMaximum(prev_prev_elevation, prev_elevation, cur_elevation):
+        return "increasing"
+    if isMinumum(prev_prev_elevation, prev_elevation, cur_elevation):
+        return "descreasing"
+    else:
+        return None
+
+
+def computeAngle(elevation, distance):
+    return (elevation / distance) * 100
